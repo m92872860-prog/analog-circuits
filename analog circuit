@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearningHub</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f7fb;
+}
+
+/* Navbar */
+nav {
+  background: #4a6cf7;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+nav a {
+  color: white;
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+/* Container */
+.container {
+  padding: 20px;
+}
+
+/* Cards */
+.card {
+  background: white;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Form */
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+button {
+  background: #4a6cf7;
+  color: white;
+  padding: 10px;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #3a5bd9;
+}
+
+.hidden {
+  display: none;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+}
+
+/* Courses */
+.course {
+  display: inline-block;
+  width: 30%;
+  margin: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .course {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav>
+  <div><b>LearningHub</b></div>
+  <div id="navLinks">
+    <a href="#" onclick="showPage('home')">Home</a>
+    <a href="#" onclick="showPage('register')">Register</a>
+    <a href="#" onclick="showPage('login')">Login</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Home -->
+  <div id="home">
+    <h2>Welcome to LearningHub</h2>
+    <div class="card">Learn Web Development</div>
+    <div class="card">Learn Python</div>
+    <div class="card">Learn Data Science</div>
+  </div>
+
+  <!-- Register -->
+  <div id="register" class="hidden">
+    <h2>Register</h2>
+    <input id="regName" placeholder="Full Name">
+    <input id="regEmail" placeholder="Email">
+    <input id="regPass" type="password" placeholder="Password">
+    <input id="regConfirm" type="password" placeholder="Confirm Password">
+    <div id="regError" class="error"></div>
+    <button onclick="register()">Register</button>
+    <p>Already have an account? <a href="#" onclick="showPage('login')">Login</a></p>
+  </div>
+
+  <!-- Login -->
+  <div id="login" class="hidden">
+    <h2>Login</h2>
+    <input id="logEmail" placeholder="Email">
+    <input id="logPass" type="password" placeholder="Password">
+    <div id="logError" class="error"></div>
+    <button onclick="login()">Login</button>
+    <p><a href="#">Forgot Password?</a></p>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden">
+    <h2 id="welcome"></h2>
+    <button onclick="logout()">Logout</button>
+
+    <h3>Your Courses</h3>
+    <div class="course card">HTML & CSS</div>
+    <div class="course card">JavaScript</div>
+    <div class="course card">React</div>
+  </div>
+
+</div>
+
+<script>
+// Show Pages
+function showPage(page) {
+  document.querySelectorAll('.container > div').forEach(div => {
+    div.classList.add('hidden');
+  });
+  document.getElementById(page).classList.remove('hidden');
+}
+
+// Register
+function register() {
+  let name = document.getElementById('regName').value;
+  let email = document.getElementById('regEmail').value;
+  let pass = document.getElementById('regPass').value;
+  let confirm = document.getElementById('regConfirm').value;
+  let error = document.getElementById('regError');
+
+  error.innerText = "";
+
+  if (!email.includes("@")) {
+    error.innerText = "Invalid email";
+    return;
+  }
+
+  if (pass.length < 6) {
+    error.innerText = "Password must be at least 6 characters";
+    return;
+  }
+
+  if (pass !== confirm) {
+    error.innerText = "Passwords do not match";
+    return;
+  }
+
+  let user = { name, email, pass };
+  localStorage.setItem("user", JSON.stringify(user));
+
+  alert("Registration successful!");
+  showPage('login');
+}
+
+// Login
+function login() {
+  let email = document.getElementById('logEmail').value;
+  let pass = document.getElementById('logPass').value;
+  let error = document.getElementById('logError');
+
+  let user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user || user.email !== email || user.pass !== pass) {
+    error.innerText = "Invalid credentials";
+    return;
+  }
+
+  localStorage.setItem("loggedIn", "true");
+  document.getElementById("welcome").innerText = "Welcome, " + user.name;
+
+  updateNavbar(true);
+  showPage('dashboard');
+}
+
+// Logout
+function logout() {
+  localStorage.removeItem("loggedIn");
+  updateNavbar(false);
+  showPage('home');
+}
+
+// Navbar Update
+function updateNavbar(isLoggedIn) {
+  let nav = document.getElementById("navLinks");
+
+  if (isLoggedIn) {
+    nav.innerHTML = `
+      <a href="#" onclick="showPage('home')">Home</a>
+      <a href="#" onclick="showPage('dashboard')">Dashboard</a>
+      <a href="#" onclick="logout()">Logout</a>
+    `;
+  } else {
+    nav.innerHTML = `
+      <a href="#" onclick="showPage('home')">Home</a>
+      <a href="#" onclick="showPage('register')">Register</a>
+      <a href="#" onclick="showPage('login')">Login</a>
+    `;
+  }
+}
+
+// Auto login check
+window.onload = function() {
+  if (localStorage.getItem("loggedIn")) {
+    let user = JSON.parse(localStorage.getItem("user"));
+    document.getElementById("welcome").innerText = "Welcome, " + user.name;
+    updateNavbar(true);
+    showPage('dashboard');
+  }
+};
+</script>
+
+</body>
+</html>
