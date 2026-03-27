@@ -1,0 +1,119 @@
+// Show Pages
+function showPage(page) {
+  document.querySelectorAll('.container > div').forEach(div => {
+    div.classList.add('hidden');
+  });
+  document.getElementById(page).classList.remove('hidden');
+}
+
+// Register Function
+function register() {
+  let name = document.getElementById('regName').value.trim();
+  let email = document.getElementById('regEmail').value.trim();
+  let pass = document.getElementById('regPass').value.trim();
+  let confirm = document.getElementById('regConfirm').value.trim();
+  let error = document.getElementById('regError');
+
+  error.innerText = "";
+
+  // Email validation
+  let emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+  if (!email.match(emailPattern)) {
+    error.innerText = "Please enter a valid email";
+    return;
+  }
+
+  // Password validation
+  if (pass.length < 6) {
+    error.innerText = "Password must be at least 6 characters";
+    return;
+  }
+
+  // Confirm password
+  if (pass !== confirm) {
+    error.innerText = "Passwords do not match";
+    return;
+  }
+
+  // Save user
+  let user = {
+    name: name,
+    email: email,
+    pass: pass
+  };
+
+  localStorage.setItem("user", JSON.stringify(user));
+
+  alert("Registration successful!");
+  showPage('login');
+}
+
+// Login Function
+function login() {
+  let email = document.getElementById('logEmail').value.trim();
+  let pass = document.getElementById('logPass').value.trim();
+  let error = document.getElementById('logError');
+
+  error.innerText = "";
+
+  let user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+    error.innerText = "No user found. Please register first.";
+    return;
+  }
+
+  if (user.email !== email || user.pass !== pass) {
+    error.innerText = "Invalid email or password";
+    return;
+  }
+
+  // Save login state
+  localStorage.setItem("loggedIn", "true");
+
+  document.getElementById("welcome").innerText = "Welcome, " + user.name;
+
+  updateNavbar(true);
+  showPage('dashboard');
+}
+
+// Logout Function
+function logout() {
+  localStorage.removeItem("loggedIn");
+  updateNavbar(false);
+  showPage('home');
+}
+
+// Update Navbar
+function updateNavbar(isLoggedIn) {
+  let nav = document.getElementById("navLinks");
+
+  if (isLoggedIn) {
+    nav.innerHTML = `
+      <a href="#" onclick="showPage('home')">Home</a>
+      <a href="#" onclick="showPage('dashboard')">Dashboard</a>
+      <a href="#" onclick="logout()">Logout</a>
+    `;
+  } else {
+    nav.innerHTML = `
+      <a href="#" onclick="showPage('home')">Home</a>
+      <a href="#" onclick="showPage('register')">Register</a>
+      <a href="#" onclick="showPage('login')">Login</a>
+    `;
+  }
+}
+
+// Auto Login Check
+window.onload = function () {
+  let isLoggedIn = localStorage.getItem("loggedIn");
+
+  if (isLoggedIn) {
+    let user = JSON.parse(localStorage.getItem("user"));
+
+    if (user) {
+      document.getElementById("welcome").innerText = "Welcome, " + user.name;
+      updateNavbar(true);
+      showPage('dashboard');
+    }
+  }
+};
